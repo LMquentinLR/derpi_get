@@ -5,15 +5,7 @@ derpi_get is a module built to scrap derpibooru.org (abbrev. derpi) pictures. It
 
 ### Installation
 derpi_get requires Python 3.x to run. It uses the following modules:
-| Module names |
-| ------ |
-| json |
-| operator |
-| os |
-| numpy |
-| requests |
-| random |
-| time |
+>  json, operator, os, numpy, requests, random, time
 Install the dependencies.
 ```sh
 $ cd derpi_get
