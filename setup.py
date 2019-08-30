@@ -10,6 +10,7 @@ setuptools.setup(
     description="A simple implementation of a derpibooru scraper",
     long_description=long_description,
     long_description_content_type="text/markdown",
+	url = "https://github.com/LMquentinLR/derpi_get",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
