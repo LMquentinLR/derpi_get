@@ -223,26 +223,25 @@ class img_metadata:
         url_list = []
         
         for fname in metadata_files_list:
-            
-            with open(os.getcwd() + "\\data\\" + fname,"r") as file: json_local = json.load(file)
-            if json_local == []: break
-            
-            tags_keep = list(filter(lambda item: item.startswith("+"), tags))
-            tags_keep = list(map(lambda item: item[1:], tags_keep))
-            tags_remove = list(filter(lambda item: item.startswith("-"), tags))
-            tags_remove = list(map(lambda item: item[1:], tags_remove))
-            
-            fltr = any_or_all(at_least_one)
-            filter_keep = lambda item: fltr(tag in item["tags"].split(", ") for tag in tags_keep)
-            filter_remove = lambda item: not any(tag in item["tags"].split(", ") for tag in tags_remove)
-            json_kept = list(filter(filter_keep, json_local))
-            json_kept = list(filter(filter_remove, json_kept))
-            
-            filter_id = lambda item: item["id"]
-            filter_url = lambda item: item["representations"]["large"][2:]
-            id_list += list(map(filter_id, json_kept))
-            url_list += list(map(filter_url, json_kept))
-            
+            try:
+                with open(os.getcwd() + "\\data\\" + fname,"r") as file: json_local = json.load(file)
+                if json_local == []: break
+                tags_keep = list(filter(lambda item: item.startswith("+"), tags))
+                tags_keep = list(map(lambda item: item[1:], tags_keep))
+                tags_remove = list(filter(lambda item: item.startswith("-"), tags))
+                tags_remove = list(map(lambda item: item[1:], tags_remove))
+                fltr = any_or_all(at_least_one)
+                filter_keep = lambda item: fltr(tag in item["tags"].split(", ") for tag in tags_keep)
+                filter_remove = lambda item: not any(tag in item["tags"].split(", ") for tag in tags_remove)
+                json_kept = list(filter(filter_keep, json_local))
+                json_kept = list(filter(filter_remove, json_kept))
+                filter_id = lambda item: item["id"]
+                filter_url = lambda item: item["representations"]["large"][2:]
+                id_list += list(map(filter_id, json_kept))
+                url_list += list(map(filter_url, json_kept))
+            except Exception as e:
+                print(f"There was an error during the JSON load of file {fname}:\n{e}")
+        
         return list(zip(id_list, url_list))
     
     def repair_tags(self):
@@ -251,36 +250,36 @@ class img_metadata:
         ---
         :param <self>: <class> ; class object reference
         """
-        metadata_files_list = filter(lambda file: file.startswith("derpibooru_metadata"), 
-                                     os.listdir(os.getcwd() + "\\data"))
+        metadata_files_list = filter(lambda file: file.startswith("derpibooru_metadata"), os.listdir(os.getcwd() + "\\data"))
         metadata_files_list = list(metadata_files_list)
         
-        for fname in metadata_files_list:
-            
+        for fname in metadata_files_list: 
             with open(os.getcwd() + "\\data\\" + fname, "r") as file: 
-                
-                json_local = json.load(file)
-                if json_local == []:break
-                
-                for index, item in enumerate(json_local):
-
-                    if item["tags"] == None:
-                        json_id = item["id"]
-                        path_derpibooru = "https://derpibooru.org/" + str(json_id) + ".json"
-
-                        try:
-                            json_derpibooru = requests.get(path_derpibooru).json()
-                            time.sleep(.250)
-                            if json_derpibooru["tags"] == None: raise AbsentTagList
-                            json_local[index]["tags"] = json_derpibooru["tags"]
-                            print(f"The tags of the picture {json_id} were updated.")
-
-                        except AbsentTagList:
-                            print(f"The url request for the picture {json_id} returned an empty list of tags.")
-
-                        except Exception as e:
-                            print(e)
-                
+                try:
+                    json_local = json.load(file)
+                    if json_local == []:break
+                    
+                    for index, item in enumerate(json_local):
+                        
+                        if item["tags"] == None:
+                            json_id = item["id"]
+                            path_derpibooru = "https://derpibooru.org/" + str(json_id) + ".json"
+                            
+                            try:
+                                json_derpibooru = requests.get(path_derpibooru).json()
+                                time.sleep(.250)
+                                if json_derpibooru["tags"] == None: raise AbsentTagList
+                                json_local[index]["tags"] = json_derpibooru["tags"]
+                                print(f"The tags of the picture {json_id} were updated.")
+                                
+                            except AbsentTagList:
+                                print(f"The url request for the picture {json_id} returned an empty list of tags.")
+                                
+                            except Exception as e:
+                                print(e)
+                except Exception as e:
+                    print(f"There was an error during the JSON load of file {fname}:\n{e}")
+                    
             with open(os.getcwd() + "\\data\\" + fname,'w') as file: json.dump(json_local, file)
 
 class Error(Exception):
