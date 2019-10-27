@@ -2,38 +2,42 @@ import json
 import operator
 import os
 import numpy as np
-import requests
 import random
+import requests
 import time
 
 class img_metadata:
     """
-    Class object that corresponds to the process retrieving picture metadata from the REST API
-    of the website derpibooru--data is retrieved as a series of est. 1Mb JSON files.
+    Class object that describes the process on how to retrieve picture metadata from derpibooru's
+	REST API. Data is retrieved as a series of c. 1Mb JSON files.
     """
     def __init__(self, tags = [], at_least_one = True, instances = 10):
         """
         Initializes of the img_metadata class object.
         ---
-        :param <self>:             <class>   ; class object reference
-        :param <tags>:             <list>    ; list of strings (i.e. picture tags)
-        :param <at_least_one>:     <boolean> ; toggles 'at least one tag' option instead of 'all tags'
-        :param <instances>:        <integer> ; number of instances/loops allowed before program stops
+        :param <self>: <class> ; class object reference
+        :param <tags>: <list> ; list of strings (i.e. picture tags)
+        :param <at_least_one>: <boolean> ; toggles 'at least one tag' option instead of 'all tags'
+        :param <instances>: <integer> ; number of instances/loops allowed before stop
         """
         assert isinstance(tags, list)
         assert isinstance(instances, int)
         assert isinstance(at_least_one, bool)
+		
         self.tags = tags
         self.at_least_one = at_least_one
         self.instances = instances
     
-    def convert_bytes(self, bytes_size):
+    def bytes_length(self, bytes_size):
         """
-        Converts byte lengths.
+        Calculates approximate byte length of a file, based on the assumption that the file will
+		not exceed 1,000Tb in size.
         ---
-        :param <self>:       <class>   ; class object reference
+        :param <self>: <class> ; class object reference
         :param <bytes_size>: <integer> ; size in bytes of a file
         """
+		assert isinstance(bytes_size, int)
+		
         for unit_multiple in ['bytes', 'KB', 'MB', 'GB', 'TB']:
             if bytes_size < 1024.0:
                 return "%3.1f %s" % (bytes_size, unit_multiple)
@@ -42,6 +46,15 @@ class img_metadata:
     def keys_to_keep(self):
         """
         Returns the keys to keep in the JSON extract.
+		keys available:
+		{"id", "created_at", "updated_at", "first_seen_at", "tags", "tag_ids", "uploader_id",
+		"score", "comment_count", "width", "height", "tag_count", "file_name", "description",
+		"uploader", "image", "upvotes", "downvotes", "faves", "aspect_ratio", "original_format",
+		"mime_type", "sha512_hash", "orig_sha512_hash", "source_url", 
+		"representations":{
+				"thumb_tiny", "thumb_small", "thumb", "small", "medium", 
+				"large", "tall", "full", "webm", "mp4"},
+		"is_rendered", "is_optimized", "interactions", "spoilered"}
         ---
         :param <self>: <class> ; class object reference
         """
@@ -57,7 +70,7 @@ class img_metadata:
         :param <self>: <class>  ; class object reference
         :param <path>: <string> ; path of a json file
         """
-        length = self.convert_bytes(float(os.stat(path).st_size))
+        length = self.bytes_length(float(os.stat(path).st_size))
         length = length.split(" ")
         if float(length[0]) >= 1.0 and length[1] == "MB":
             nb_file = 0
