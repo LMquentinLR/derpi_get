@@ -1,18 +1,11 @@
 # derpi_get
-derpi_get is a module built to scrap derpibooru.org (abbrev. derpi) pictures. It offers two functionalities:
-- extraction of derpi's entire metadata (as a series of 1Mb .json files)
-- download of derpi pictures based on a list of picture ids that can be built using the module
+derpi_get is a module built to retrieve derpibooru.org (abbrev. derpi) metadata and pictures. Users can leverage two functionalities:
+- download of derpi metadata (as a series of 1Mb .json files)
+- download of derpi pictures, based on a list of IDs that can be built using the first functionality
 
 ### Installation
-derpi_get requires Python 3.x to run. It uses the following modules:
->  json, operator, os, numpy, requests, random, time
-
-Install the dependencies.
-```sh
-$ cd derpi_get
-$ pip install derpi_get
-$ python setup.py sdist
-```
+derpi_get requires Python 3.x. It has the following dependencies:
+>  json, operator, os, numpy, random, requests, time
 
 ### Available functions
 | method | description | variables |
@@ -36,9 +29,9 @@ $ python setup.py sdist
 > The variable "at_least_one" specifies whether the id search retrieve ids with at least one of the tags flagged with a "+" or if the search retrieve only the ids that have all the tags flagged with a "+" 
 
 ### Code of conduct and TOS
-Anyone can use the following module. However, respect the Derpibooru licensing rules. Users making abusively high numbers of requests may be asked to stop. Your application MUST properly cache, and respect server-side cache expiry times. Your client MUST gracefully back off if requests fail (eg non-200 HTTP code), preferably exponentially or fatally.
+Anyone can use the following module. However, respect the Derpibooru licensing rules. Users making abusively high numbers of requests may be asked to stop by the website administrators. Your application **must** properly cache, and respect server-side cache expiry times. Your client **must** gracefully back off if requests fail (eg non-200 HTTP code), preferably exponentially or fatally.
 As-is, the module puts time caps between each request to the derpibooru server: 
-- 0.2s between metadata requests
-- 0.5s between image requests
+- 0.2s between two metadata requests
+- 0.5s between two image requests
 ### License
 MIT
