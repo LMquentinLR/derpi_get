@@ -20,10 +20,14 @@ class img_metadata:
         :param <at_least_one>: <boolean> ; toggles 'at least one tag' option instead of 'all tags'
         :param <instances>: <integer> ; number of instances/loops allowed before stop
         """
-        assert isinstance(tags, list)
-        assert isinstance(instances, int)
-        assert isinstance(at_least_one, bool)
-		
+        try:
+            assert isinstance(tags, list)
+            assert isinstance(instances, int)
+            assert isinstance(at_least_one, bool)
+        except AssertionError as a:
+            print("An assertion error was raised at initiation of the class img_metadata located in " + \
+			"the derpi_get/core_class.py file.", a, sep = "\n")
+			
         self.tags = tags
         self.at_least_one = at_least_one
         self.instances = instances
@@ -36,8 +40,12 @@ class img_metadata:
         :param <self>: <class> ; class object reference
         :param <bytes_size>: <integer> ; size in bytes of a file
         """
-		assert isinstance(bytes_size, int)
-		
+        try:
+            assert isinstance(bytes_size, int)
+        except AssertionError as a:
+            print("An assertion error was raised while using the method bytes_length() within the " + \
+			"class img_metadata located in the derpi_get/core_class.py file.", a, sep = "\n")
+        
         for unit_multiple in ['bytes', 'KB', 'MB', 'GB', 'TB']:
             if bytes_size < 1024.0:
                 return "%3.1f %s" % (bytes_size, unit_multiple)
@@ -46,71 +54,96 @@ class img_metadata:
     def keys_to_keep(self):
         """
         Returns the keys to keep in the JSON extract.
-		keys available:
-		{"id", "created_at", "updated_at", "first_seen_at", "tags", "tag_ids", "uploader_id",
-		"score", "comment_count", "width", "height", "tag_count", "file_name", "description",
-		"uploader", "image", "upvotes", "downvotes", "faves", "aspect_ratio", "original_format",
-		"mime_type", "sha512_hash", "orig_sha512_hash", "source_url", 
-		"representations":{
-				"thumb_tiny", "thumb_small", "thumb", "small", "medium", 
-				"large", "tall", "full", "webm", "mp4"},
-		"is_rendered", "is_optimized", "interactions", "spoilered"}
+        keys available:
+        {"id", "created_at", "updated_at", "first_seen_at", "tags", "tag_ids", "uploader_id",
+        "score", "comment_count", "width", "height", "tag_count", "file_name", "description",
+        "uploader", "image", "upvotes", "downvotes", "faves", "aspect_ratio", "original_format",
+        "mime_type", "sha512_hash", "orig_sha512_hash", "source_url", 
+        "representations":{
+            "thumb_tiny", "thumb_small", "thumb", "small", "medium", 
+            "large", "tall", "full", "webm", "mp4"},
+        "is_rendered", "is_optimized", "interactions", "spoilered"}
         ---
         :param <self>: <class> ; class object reference
         """
-        keys = ["id", "created_at", "updated_at", "score", "uploader",
-                "uploader_id", "upvotes", "downvotes", "faves", "tags",
-                "tags_id", "aspect_ratio", "representations"]
-        return keys
+        keys_to_keep = ["id", "created_at", "updated_at", "score", "uploader",
+                        "uploader_id", "upvotes", "downvotes", "faves", "tags",
+                        "tags_id", "aspect_ratio", "representations"]
+        return keys_to_keep
     
-    def json_split(self, path):
+    def json_archive(self, path):
         """
         Splits a json file if it is too large (1Mb).
         ---
-        :param <self>: <class>  ; class object reference
-        :param <path>: <string> ; path of a json file
+        :param <self>: <class> ; class object reference
+        :param <path>: <string> ; path of a json file to weigh
         """
+        try:
+            assert isinstance(path, str)
+        except AssertionError as a:
+            print("An assertion error was raised while using the method json_archive() within the " + \
+			"class img_metadata located in the derpi_get/core_class.py file.", a, sep = "\n")
+			
         length = self.bytes_length(float(os.stat(path).st_size))
-        length = length.split(" ")
+        length = length.split(" ") #checks the size of file of path <path>
+		
         if float(length[0]) >= 1.0 and length[1] == "MB":
-            nb_file = 0
+            nb_file = -1
             while True:
+                nb_file += 1
                 new_path = path[:-5] + "_" + str(nb_file) + ".json"
                 if os.path.exists(new_path) == False:
-                    print("SPLIT: JSON file to be split as 1Mb max size reached.")
-                    os.rename(path, new_path) 
+                    print("JSON MAX FILE SIZE REACHED: JSON file to be archived and a new one created.")
+                    try:
+                        os.rename(path, new_path)
+                    except (IOError, WindowsError) as a:
+                        print("An assertion error was raised while using the method json_archive() within the " + \
+						"class img_metadata located in the derpi_get/core_class.py file.", a, sep = "\n")
                     break
-                nb_file += 1
-    
+					
     def check_prior_extract(self, print_msg = True):
         """
-        Checks existing metadata extractions in the working directory. 
+        Checks if prior JSON extractions exist in the working directory (possibly created by self.json_archive()
         The default file name is 'derpibooru_metadata.json'.
         ---
-        :param <self>:      <class>   ; class object reference
+        :param <self>: <class> ; class object reference
         :param <print_msg>: <boolean> ; toggle between 'prints message to command line' and 'prints nothing'
         """
-        
-        json_found = "FOUND: 'derpibooru_metadata.json'"
-        json_not_found = "MISSING FILE: 'derpibooru_metadata.json'; NOT IN: folder 'data'\n" + \
-                         "FILE TO CREATE: 'derpibooru_metadata.json'"
+        try:
+            assert isinstance(print_msg, bool)
+        except AssertionError as a:
+            print("An assertion error was raised while using the method check_prior_extract() within the " + \
+			"class img_metadata located in the derpi_get/core_class.py file.", a, sep = "\n")
+		
+        json_found = "FILE FOUND: 'derpibooru_metadata.json'"
+        json_not_found = "FILE MISSING: 'derpibooru_metadata.json'; NOT IN: folder 'data'\n" + \
+                        "FILE TO CREATE: 'derpibooru_metadata.json'"
         json_created = "FILE CREATED: 'derpibooru_metadata.json'"
-        json_not_created = "ERROR FILE CREATION: 'derpibooru_metadata.json'"
+        json_not_created = "FILE CREATION ERROR: 'derpibooru_metadata.json' not created"
         json_path = os.getcwd() + "\\data\\derpibooru_metadata.json"
         
+        no_existing_folder = "FOLDER MISSING: Folder 'data' not found\n" + \
+							"FOLDER TO CREATE: 'data' to be created in working directory."
+        folder_created = "FOLDER CREATED: New folder 'data' created in working directory."
+        folder_not_created = "FOLDER CREATION ERROR: Folder 'data' not created in working directory."
         find = os.path.exists(json_path)
         
         #if TRUE: opens file and extracts the contained metadata
         #if FALSE: creates file storing an empty list
-        if find:
-            if print_msg: print(json_found)
-        else:
-            if print_msg: print(json_not_found)
+        if find and print_msg: print(json_found)
+        if not print_msg and print_msg: print(json_not_found)
+        
+        if not os.path.exists(os.getcwd() + "\\data"):
             try:
-                if not os.path.exists(os.getcwd() + "\\data"): os.makedirs(os.getcwd() + "\\data")
-                with open(json_path, "w") as file: file.write("[]")   
-                print(json_created) 
-            except Exception as e: print(json_not_created, e, sep = "\n")
+                print(no_existing_folder)
+                os.makedirs(os.getcwd() + "\\data")
+                with open(json_path, "w") as file: file.write("[]") 
+                print(folder_created)
+            except (IOError, WindowsError) as a:
+                print(folder_not_created)
+                print("An assertion error was raised while using the method check_prior_extract() " + \
+				"within the class img_metadata located in the derpi_get/core_class.py file.", a, sep = "\n")
+        print(json_created)
         return json_path
 
     def crawl_metadata(self):
@@ -181,7 +214,8 @@ class img_metadata:
 
     def json_collect(self, json_local, json_derpibooru, json_path):
         """
-        Collects picture metadata extracted from derpibooru.
+        Stores a json file for later use with a specific numbered name when its size reaches
+		1Mb. Storing is performed by renaming the target file.
         ---
         :param <self>:            <class>       ; class object reference
         :param <json_local>:      <json_object> ; JSON data stored locally
@@ -205,7 +239,7 @@ class img_metadata:
 
         with open(json_path,'w') as file: json.dump(json_local, file)
         
-        self.json_split(json_path)
+        self.json_archive(json_path)
         
         return last_id
     
