@@ -1,10 +1,13 @@
 import json
+import logging
 import operator
 import os
 import numpy as np
 import random
 import requests
 import time
+
+log = logging.getLogger()
 
 class img_metadata:
     """
@@ -20,13 +23,12 @@ class img_metadata:
         :param <at_least_one>: <boolean> ; toggles 'at least one tag' option instead of 'all tags'
         :param <instances>: <integer> ; number of instances/loops allowed before stop
         """
-        try:
-            assert isinstance(tags, list)
-            assert isinstance(instances, int)
-            assert isinstance(at_least_one, bool)
-        except AssertionError as a:
-            print("An assertion error was raised at initiation of the class img_metadata located in " + \
-			"the derpi_get/core_class.py file.", a, sep = "\n")
+        error_msg = "WRONG TYPE: An assertion error was raised at initiation of the class img_metadata located in " + \
+			"the derpi_get/core_class.py file."
+        
+        if not isinstance(tags, list): raise AssertionError(error_msg + "\n<tags> variable not a 'list'")
+        if not (isinstance(instances, int) or instances == ""): raise AssertionError(error_msg + "\n<instances> variable not an 'int' or ''")
+        if not isinstance(at_least_one, bool): raise AssertionError(error_msg + "\n<at_least_one> variable not a 'bool'")
 			
         self.tags = tags
         self.at_least_one = at_least_one
@@ -40,11 +42,10 @@ class img_metadata:
         :param <self>: <class> ; class object reference
         :param <bytes_size>: <integer> ; size in bytes of a file
         """
-        try:
-            assert isinstance(bytes_size, int)
-        except AssertionError as a:
-            print("An assertion error was raised while using the method bytes_length() within the " + \
-			"class img_metadata located in the derpi_get/core_class.py file.", a, sep = "\n")
+        error_msg = "WRONG TYPE: An assertion error was raised while using the method bytes_length() within the " + \
+			        "class img_metadata located in the derpi_get/core_class.py file."
+        
+        if not isinstance(bytes_size, float): raise AssertionError(error_msg + "\n<bytes_size> variable not an 'float'")
         
         for unit_multiple in ['bytes', 'KB', 'MB', 'GB', 'TB']:
             if bytes_size < 1024.0:
@@ -78,29 +79,39 @@ class img_metadata:
         :param <self>: <class> ; class object reference
         :param <path>: <string> ; path of a json file to weigh
         """
-        try:
-            assert isinstance(path, str)
-        except AssertionError as a:
-            print("An assertion error was raised while using the method json_archive() within the " + \
-			"class img_metadata located in the derpi_get/core_class.py file.", a, sep = "\n")
+        error_1 = "WRONG TYPE: "
+        error_2 = "IO or WINDOWS ERROR: "
+        error_msg = "An error was raised while using the method json_archive() within the " + \
+			        "class img_metadata located in the derpi_get/core_class.py file."
+        
+        max_size_msg = "JSON MAX FILE SIZE REACHED: JSON file to be archived and a new one created."
+        
+        if not isinstance(path, str): raise AssertionError(error_1 + error_msg + "\n<path> variable not a 'str'")
 			
         length = self.bytes_length(float(os.stat(path).st_size))
         length = length.split(" ") #checks the size of file of path <path>
 		
         if float(length[0]) >= 1.0 and length[1] == "MB":
             nb_file = -1
+            
             while True:
                 nb_file += 1
                 new_path = path[:-5] + "_" + str(nb_file) + ".json"
+                
                 if os.path.exists(new_path) == False:
-                    print("JSON MAX FILE SIZE REACHED: JSON file to be archived and a new one created.")
+                    print(max_size_msg)
+                    
                     try:
                         os.rename(path, new_path)
-                    except (IOError, WindowsError) as a:
-                        print("An assertion error was raised while using the method json_archive() within the " + \
-						"class img_metadata located in the derpi_get/core_class.py file.", a, sep = "\n")
+                    except (IOError, WindowsError) as error:
+                        log.error(error_2 + error_msg)
+                        raise
+                    
                     break
-					
+            return True
+        else:
+            return False
+
     def check_prior_extract(self, print_msg = True):
         """
         Checks if prior JSON extractions exist in the working directory (possibly created by self.json_archive()
@@ -109,147 +120,161 @@ class img_metadata:
         :param <self>: <class> ; class object reference
         :param <print_msg>: <boolean> ; toggle between 'prints message to command line' and 'prints nothing'
         """
-        try:
-            assert isinstance(print_msg, bool)
-        except AssertionError as a:
-            print("An assertion error was raised while using the method check_prior_extract() within the " + \
-			"class img_metadata located in the derpi_get/core_class.py file.", a, sep = "\n")
-		
+        error_1 = "WRONG TYPE: "
+        error_2 = "IO or WINDOWS ERROR: "
+        error_msg = "An error was raised while using the method check_prior_extract() within the " + \
+			        "class img_metadata located in the derpi_get/core_class.py file."
+        
+        folder_created = "FOLDER CREATED: New folder 'data' created in working directory."
+        folder_not_created = "FOLDER CREATION ERROR: Folder 'data' not created in working directory."
+
+        json_created = "FILE CREATED: 'derpibooru_metadata.json'"
+        json_not_created = "FILE CREATION ERROR: 'derpibooru_metadata.json' not created"        
         json_found = "FILE FOUND: 'derpibooru_metadata.json'"
         json_not_found = "FILE MISSING: 'derpibooru_metadata.json'; NOT IN: folder 'data'\n" + \
                         "FILE TO CREATE: 'derpibooru_metadata.json'"
-        json_created = "FILE CREATED: 'derpibooru_metadata.json'"
-        json_not_created = "FILE CREATION ERROR: 'derpibooru_metadata.json' not created"
         json_path = os.getcwd() + "\\data\\derpibooru_metadata.json"
         
         no_existing_folder = "FOLDER MISSING: Folder 'data' not found\n" + \
 							"FOLDER TO CREATE: 'data' to be created in working directory."
-        folder_created = "FOLDER CREATED: New folder 'data' created in working directory."
-        folder_not_created = "FOLDER CREATION ERROR: Folder 'data' not created in working directory."
+        
+        if not isinstance(print_msg, bool): raise AssertionError(error_1 + error_msg + "\n<print_msg> variable not a 'bool'")
+		
         find = os.path.exists(json_path)
         
         #if TRUE: opens file and extracts the contained metadata
         #if FALSE: creates file storing an empty list
-        if find and print_msg: print(json_found)
-        if not print_msg and print_msg: print(json_not_found)
-        
-        if not os.path.exists(os.getcwd() + "\\data"):
+        if find:
+            if print_msg: print(json_found)
+        if not find:
             try:
-                print(no_existing_folder)
-                os.makedirs(os.getcwd() + "\\data")
-                with open(json_path, "w") as file: file.write("[]") 
-                print(folder_created)
-            except (IOError, WindowsError) as a:
-                print(folder_not_created)
-                print("An assertion error was raised while using the method check_prior_extract() " + \
-				"within the class img_metadata located in the derpi_get/core_class.py file.", a, sep = "\n")
-        print(json_created)
+                if print_msg: print(json_not_found)
+                
+                if not os.path.exists(os.getcwd() + "\\data"):
+                    if print_msg: print(no_existing_folder)
+                    os.makedirs(os.getcwd() + "\\data")
+                    if print_msg: print(folder_created)
+                
+                with open(json_path, "w") as file: file.write("[]")
+                if print_msg: print(json_created)
+            except (IOError, WindowsError) as error:
+                if print_msg: print(folder_not_created)
+                log.error(error_2 + error_msg)
+                raise
+        
         return json_path
 
     def crawl_metadata(self):
         """
-        Retrieves from the derpibooru REST API a list of picture metadata.
+        Retrieves picture metadata from the derpibooru REST API.
         ---
         :param <self>: <class> ; class object reference
         """
-        #initializes local variables    
+        derpibooru_url = "https://derpibooru.org/images.json?constraint=id&order=a&gt="
+        exit_msg = "The crawler scraped the derpibooru metadata. The program will " + \
+                   "now close."
+        io_windows_error = "IO or WINDOWS ERROR:  An error was raised while using the method crawl_metadata() within the " + \
+                           "class img_metadata located in the derpi_get/core_class.py file."
+        max_instances_reached = f"The set maximum number of images to request was reached at {self.instances}."
+        request_error = "REQUEST ERROR: The program couldn't extract the page and " + \
+                        "will now proceed to an exponential back off."
+        request_msg = "You are requesting the derpibooru page starting with the "
+        
         iterations = self.instances
         back_off_counter = 1
-        max_instances_reached = "The set maximum number of images to request was reached " + \
-                                f"at {self.instances}."
-        exit_condition = "The crawler scraped the derpibooru metadata. The program will " + \
-                         "now close."
         
-        #retrieves most recent recorded picture id
-        if os.path.exists(os.getcwd() + "\\data\\derpibooru_metadata.json"): 
-            json_path = os.getcwd() + "\\data\\derpibooru_metadata.json"
-        else: 
-            json_path = self.check_prior_extract()
+        json_path = self.check_prior_extract()
         
         with open(json_path, "r") as file: requested_id = json.load(file)
+        json_local = requested_id
         
         if requested_id == []: requested_id = 1
         else: requested_id = requested_id[0]["id"] + 1
-        
-        while True:
-            requested_page = "You are requesting the derpibooru page starting with the " + \
-                             f"id {requested_id}."
-            error_json_extraction = "The program couldn't extract the page and " + \
-                                    "will now proceed to an exponential back off."
-            
-            #checks if previous JSON was not renamed due to the 1Mb splitting
-            json_path = self.check_prior_extract(False)
-            
-            with open(json_path,'r') as file: json_local = json.load(file)
-            
-            print(requested_page)
-            
-            path_derpibooru = "https://derpibooru.org/images.json?constraint=id&order=a&gt=" + \
-                              str(requested_id)
-            
-            try:
-                if type(iterations) == int:
-                    if iterations > 1: iterations -= 1
+
+        try:
+            while True:
+                #check on iteration number
+                if type(iterations)==int:
+                    if iterations > 0: iterations -= 1
                     else: break
-                
-                json_derpibooru = requests.get(path_derpibooru).json()["images"]
+                #check for existing data folder and target metadata file
+                json_path = self.check_prior_extract(False)
+                #request for new derpibooru page
+                print(request_msg + f"id {requested_id}.")
+                path_derpibooru = derpibooru_url + str(requested_id)
+                try:
+                    json_derpibooru = requests.get(path_derpibooru).json()["images"]
+                except requests.exceptions.Timeout as error:
+                    log.error(request_error)
+                    print(f"The program will back off for {2**back_off_counter} seconds.")
+                    back_off_counter += 1
+                    time.sleep(2 ** back_off_counter)
+                #raise of exception if derpibooru was fully scraped
                 if json_derpibooru == []: raise DatabaseFullyCrawled
-                
-                requested_id = self.json_collect(json_local, json_derpibooru, json_path)
-                
+                #update content of metadata file
+                requested_id, json_local = self.json_collect(json_local, json_derpibooru, json_path)
                 #time delay to respect the API's license
-                time.sleep(.200)
-            
-            except DatabaseFullyCrawled:
-                print(exit_condition)
-                break
-            
-            except Exception as e:
-                print(e)
-                print(error_json_extraction)
-                print(f"The error was the following: {e}.\n The program will back " + \
-                      f"off for {2**back_off_counter} seconds.")
-                back_off_counter += 1
-                time.sleep(2 ** back_off_counter)
+                time.sleep(.200)   
+        except DatabaseFullyCrawled:
+            print(exit_msg)
+        except (IOError, WindowsError) as error:
+            log.error(io_windows_error)
+            raise
+        except requests.exceptions.TooManyRedirects as error:
+            log.error(f"REQUEST ERROR: {error}.")
+            raise
+        except requests.exceptions.RequestException as error:
+            log.error(f"REQUEST ERROR: {error}.")
+            raise
+        except requests.exceptions.HTTPError as error:
+            log.error(f"REQUEST [HTTP] ERROR: {error}.")
+            raise
+        except requests.exceptions.ConnectionError as error:
+            log.error(f"REQUEST [CONNECTION] ERROR: {error}.")
+            raise
+        except requests.exceptions.Timeout as error:
+            log.error(f"REQUEST [TIMEOUT] ERROR: {error}.")
+            raise
+        except requests.exceptions.RequestException as error:
+            log.error(f"REQUEST [OTHER] ERROR: {error}.")
+            raise          
 
     def json_collect(self, json_local, json_derpibooru, json_path):
         """
         Stores a json file for later use with a specific numbered name when its size reaches
 		1Mb. Storing is performed by renaming the target file.
         ---
-        :param <self>:            <class>       ; class object reference
-        :param <json_local>:      <json_object> ; JSON data stored locally
+        :param <self>: <class> ; class object reference
+        :param <json_local>: <json_object> ; JSON data stored locally
         :param <json_derpibooru>: <json_object> ; JSON data extracted from derpibooru
-        :param <json_path>:       <string>      ; path of local file where the data is stored
+        :param <json_path>: <string> ; path of local file where the data is stored
         """
         stored_keys = self.keys_to_keep()
         last_id = -1
         
+        #sorting metadata by ID
         for image_data in json_derpibooru:
-            
             temp = image_data.copy()
-            
             for item in image_data: 
                 if item not in stored_keys: del temp[item]
-            
             last_id = max(image_data["id"], last_id)
-            
             json_local.append(temp)
             json_local.sort(key=operator.itemgetter("id"), reverse = True)
 
         with open(json_path,'w') as file: json.dump(json_local, file)
         
-        self.json_archive(json_path)
+        split = self.json_archive(json_path)
+        if split == True: json_local = []
         
-        return last_id
+        return last_id, json_local
     
     def id_filter(self, tags, at_least_one):
         """
         Retrieves the IDs of the locally stored metadata that fit specific tag parameters
         ---
-        :param <self>:             <class>   ; class object reference
-        :param <tags>:             <list>    ; list of strings (i.e. picture tags)
-        :param <at_least_one>:     <boolean> ; toggles 'at least one tag' option instead of 'all tags'
+        :param <self>: <class> ; class object reference
+        :param <tags>: <list> ; list of strings (i.e. picture tags)
+        :param <at_least_one>: <boolean> ; toggles 'at least one tag' option instead of 'all tags'
         """
         def any_or_all(boolean):
             """
