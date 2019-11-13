@@ -328,30 +328,41 @@ class img_metadata:
             with open(os.getcwd() + "\\data\\" + fname, "r") as file: 
                 try:
                     json_local = json.load(file)
-                    if json_local == []:break
-                    
+                    if json_local == []: break
                     for index, item in enumerate(json_local):
-                        
                         if item["tags"] == None:
                             json_id = item["id"]
                             path_derpibooru = "https://derpibooru.org/" + str(json_id) + ".json"
-                            
-                            try:
-                                json_derpibooru = requests.get(path_derpibooru).json()
-                                time.sleep(.250)
-                                if json_derpibooru["tags"] == None: raise AbsentTagList
-                                json_local[index]["tags"] = json_derpibooru["tags"]
-                                print(f"The tags of the picture {json_id} were updated.")
-                                
-                            except AbsentTagList:
-                                print(f"The url request for the picture {json_id} returned an empty list of tags.")
-                                
-                            except Exception as e:
-                                print(e)
-                except Exception as e:
-                    print(f"There was an error during the JSON load of file {fname}:\n{e}")
-                    
-            with open(os.getcwd() + "\\data\\" + fname,'w') as file: json.dump(json_local, file)
+                            json_derpibooru = requests.get(path_derpibooru).json()
+                            time.sleep(.200)
+                            if json_derpibooru["tags"] == None: raise AbsentTagList
+                            json_local[index]["tags"] = json_derpibooru["tags"]
+                            print(f"The tags of the picture {json_id} were updated.")
+                except (IOError, WindowsError) as error:
+                    log.error(io_windows_error)
+                    raise   
+                except AbsentTagList:
+                    print(f"The url request for the picture {json_id} returned an empty list of tags.")
+                except (IOError, WindowsError) as error:
+                    log.error(io_windows_error)
+                    raise
+                except (requests.exceptions.TooManyRedirects, requests.exceptions.RequestException) as error:
+                    log.error(f"REQUEST ERROR: {error}.")
+                    raise
+                except requests.exceptions.HTTPError as error:
+                    log.error(f"REQUEST [HTTP] ERROR: {error}.")
+                    raise
+                except requests.exceptions.ConnectionError as error:
+                    log.error(f"REQUEST [CONNECTION] ERROR: {error}.")
+                    raise
+                except requests.exceptions.Timeout as error:
+                    log.error(f"REQUEST [TIMEOUT] ERROR: {error}.")
+                    raise
+            try:
+                with open(os.getcwd() + "\\data\\" + fname,'w') as file: json.dump(json_local, file)
+            except (IOError, WindowsError) as error:
+                log.error(io_windows_error)
+                raise
 
 class Error(Exception):
     """Base class for other exceptions"""
@@ -359,10 +370,6 @@ class Error(Exception):
 
 class DatabaseFullyCrawled(Error):
     """Raised when the crawler reached the last pages of derpibooru"""
-    pass
-
-class NewContentCrawled(Error):
-    """Raised when the input value is too large"""
     pass
 
 class AbsentTagList(Error):
