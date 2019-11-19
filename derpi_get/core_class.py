@@ -24,11 +24,11 @@ class img_metadata:
         :param <instances>: <integer> ; number of instances/loops allowed before stop
         """
         error_msg = "WRONG TYPE: An assertion error was raised at initiation of the class img_metadata located in " + \
-			"the derpi_get/core_class.py file."
+                    "the derpi_get/core_class.py file."
         
         if not isinstance(tags, list): raise AssertionError(error_msg + "\n<tags> variable not a 'list'")
-        if not (isinstance(instances, int) or instances == ""): raise AssertionError(error_msg + "\n<instances> variable " + \
-                                                                "not an 'int' or ''")
+        if not (isinstance(instances, int) or instances == ""): raise AssertionError(error_msg + "\n<instances> " + \
+                                                                "variable not an 'int' or ''")
         if not isinstance(at_least_one, bool): raise AssertionError(error_msg + "\n<at_least_one> variable not a 'bool'")
 			
         self.tags = tags
@@ -163,11 +163,11 @@ class img_metadata:
         :param <self>: <class> ; class object reference
         """
         derpibooru_url = "https://derpibooru.org/images.json?constraint=id&order=a&gt="
+        
         exit_msg = "The crawler scraped the derpibooru metadata. The program will " + \
                    "now close."
-        
-        io_windows_error = "IO or WINDOWS ERROR:  An error was raised while using the method crawl_metadata() within the " + \
-                           "class img_metadata located in the derpi_get/core_class.py file."
+        io_windows_error = "IO or WINDOWS ERROR:  An error was raised while using the method crawl_metadata() " + \
+                           "within the class img_metadata located in the derpi_get/core_class.py file."
         
         max_instances_reached = f"The set maximum number of images to request was reached at {self.instances}."
         
@@ -286,6 +286,9 @@ class img_metadata:
             else:
                 return all
         
+        io_windows_error = "IO or WINDOWS ERROR:  An error was raised while using the method id_filter() " + \
+                           "within the class img_metadata located in the derpi_get/core_class.py file."
+        
         metadata_files_list = filter(lambda file: file.startswith("derpibooru_metadata"), 
                                      os.listdir(os.getcwd() + "\\data"))
         metadata_files_list = list(metadata_files_list)
@@ -310,8 +313,10 @@ class img_metadata:
                 filter_url = lambda item: item["representations"]["large"][2:]
                 id_list += list(map(filter_id, json_kept))
                 url_list += list(map(filter_url, json_kept))
-            except Exception as e:
+            except (IOError, WindowsError) as error:
                 print(f"There was an error during the JSON load of file {fname}:\n{e}")
+                log.error(io_windows_error)
+                raise
         
         return list(zip(id_list, url_list))
     
@@ -337,10 +342,7 @@ class img_metadata:
                             time.sleep(.200)
                             if json_derpibooru["tags"] == None: raise AbsentTagList
                             json_local[index]["tags"] = json_derpibooru["tags"]
-                            print(f"The tags of the picture {json_id} were updated.")
-                except (IOError, WindowsError) as error:
-                    log.error(io_windows_error)
-                    raise   
+                            print(f"The tags of the picture {json_id} were updated.") 
                 except AbsentTagList:
                     print(f"The url request for the picture {json_id} returned an empty list of tags.")
                 except (IOError, WindowsError) as error:
