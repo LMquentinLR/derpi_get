@@ -2,7 +2,6 @@ import json
 import logging
 import operator
 import os
-import numpy as np
 import random
 import requests
 import time
