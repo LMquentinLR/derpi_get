@@ -309,7 +309,7 @@ class img_metadata:
                 json_kept = list(filter(filter_keep, json_local))
                 json_kept = list(filter(filter_remove, json_kept))
                 filter_id = lambda item: item["id"]
-                filter_url = lambda item: item["representations"]["large"][2:]
+                filter_url = lambda item: item["representations"]["medium"][2:]
                 id_list += list(map(filter_id, json_kept))
                 url_list += list(map(filter_url, json_kept))
             except (IOError, WindowsError) as error:

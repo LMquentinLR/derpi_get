@@ -163,7 +163,6 @@ class derpibooru_search(img_metadata):
                 path_derpibooru = item[1]
                 extension = "." + path_derpibooru.split(".")[-1]
                 
-                print(nb_req, nb_of_requests)
                 if nb_req > nb_of_requests: 
                     break
                 
@@ -173,20 +172,21 @@ class derpibooru_search(img_metadata):
                     (os.path.exists(picture_path + ".jpeg")) or
                     (os.path.exists(picture_path + ".jpg"))): 
                     continue
-                    
-                if not (item[1].endswith(("png")) or
-                    item[1].endswith(("jpeg")) or
-                    item[1].endswith(("jpg"))):
+                
+                if not (item[1].endswith("png") 
+				or item[1].endswith("jpeg") 
+				or item[1].endswith("jpg")):
                     nb_of_requests += 1
                     continue
-                    
-                    picture_path += extension
-                    request = requests.get("http://" + path_derpibooru)
-                    if request.status_code == 200:
-                        with open(picture_path, 'wb') as f:
-                            f.write(request.content)
-                    time.sleep(.200)
-                    print(f"The picture {image_id} was downloaded.")
+                
+                picture_path += extension
+                request = requests.get("http://" + path_derpibooru)
+                #print(nb_req, nb_of_requests, picture_path, path_derpibooru)
+                if request.status_code == 200:
+                    with open(picture_path, 'wb') as f:
+                        f.write(request.content)
+                time.sleep(.200)
+                print(f"The picture {image_id} was downloaded.")
         
         except (requests.exceptions.TooManyRedirects, requests.exceptions.RequestException) as error:
             log.error(f"REQUEST ERROR: {error}.")
