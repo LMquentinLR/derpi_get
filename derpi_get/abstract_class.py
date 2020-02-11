@@ -145,10 +145,10 @@ class derpibooru_search(img_metadata):
             raise
             
         if (nb_of_requests == None) or (len(id_list) < nb_of_requests): nb_of_requests = len(id_list)
-		
+
         length = len(id_list)
         nb_req = 0
-		
+
         try:
             
             while length > 0:

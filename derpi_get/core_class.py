@@ -47,7 +47,7 @@ class img_metadata:
         """
         assert(isinstance(bytes_size, float)), error_message("Erroneous Type", "bytes_length")
         for unit_multiple in ["bytes", "KB", "MB", "GB", "TB"]:
-            if bytes_size < 1024.0: return f"{round(bytes_size, 2)} {unit_multiple}."
+            if bytes_size < 1024.0: return f"{round(bytes_size, 2)} {unit_multiple}"
             bytes_size /= 1024.0
     
     def keys_to_keep(self):
@@ -198,6 +198,7 @@ class img_metadata:
                 time.sleep(.200)
             except DatabaseFullyCrawled:
                 print("The crawler scraped the derpibooru metadata. The program will now close.")
+                break
             except (IOError, WindowsError):
                 back_off_counter = back_off(back_off_counter, error_message("IO or Windows", "crawl_metadata"))
             except (requests.exceptions.TooManyRedirects, requests.exceptions.RequestException):
