@@ -8,7 +8,7 @@ import time
 
 log = logging.getLogger()
 
-def error_message(error_type, location):
+def error_message(error_type, location, file_location = "derpi_get/core_class.py"):
     """
     Creates a custom error message.
     ---
@@ -16,7 +16,7 @@ def error_message(error_type, location):
     :param <location>: <str> ; name of method where the error occured
     """
     return f"An {error_type} error was raised in the {location} method of the class img_metadata"+\
-        "in the derpi_get/core_class.py file."
+        f"in the {file_location} file."
 
 class img_metadata:
     """
