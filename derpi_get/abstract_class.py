@@ -1,4 +1,4 @@
-from .core_class import img_metadata
+from .core_class import img_metadata, error_message
 import logging
 import os
 import random
@@ -22,10 +22,8 @@ class derpibooru_search(img_metadata):
         :param <at_least_one>: <boolean> ; toggles 'at least one tag' option instead of 'all tags'
         :param <instances>: <integer> ; number of instances/loops allowed before stop
         """
-        error_msg = "WRONG TYPE: An assertion error was raised while changing the parameters of the class " + \
-                    "derpibooru_search() located in the derpi_get/abstract_class.py file."
-        if not isinstance(tags, list): raise AssertionError(error_msg + "\n<tags> variable not a 'list'")
-        if not isinstance(at_least_one, bool): raise AssertionError(error_msg + "\n<at_least_one> variable not a 'bool'")
+        assert(isinstance(tags, list)), error_message("Erroneous Type", "change_search", "derpi_get/abstract_class.py")
+        assert(isinstance(at_least_one, bool)), error_message("Erroneous Type", "change_search", "derpi_get/abstract_class.py")
         self.tags = tags
         self.at_least_one = at_least_one
         if (isinstance(instances, int) == False) and (instances != ""):
@@ -40,11 +38,7 @@ class derpibooru_search(img_metadata):
 		---
 		:param <self>: <class> ; class object reference
 		"""
-        io_windows_error = "IO or WINDOWS ERROR:  An error was raised while using the method crawl() " + \
-                           "within the class derpibooru_search located in the derpi_get/abstract_class.py file."
-		
         print("----|Entering Derpibooru Data Crawler code|----")
-        
         try:
             self.crawl_metadata()
         except DatabaseFullyCrawled:
@@ -53,18 +47,17 @@ class derpibooru_search(img_metadata):
             log.error(io_windows_error)
             raise
         except (requests.exceptions.TooManyRedirects, requests.exceptions.RequestException) as error:
-            log.error(f"REQUEST ERROR: {error}.")
+            log.error(error_message("Request [generic error]", "crawl", "derpi_get/abstract_class.py"))
             raise
         except requests.exceptions.HTTPError as error:
-            log.error(f"REQUEST [HTTP] ERROR: {error}.")
+            log.error(error_message("Request [hhtp]", "crawl", "derpi_get/abstract_class.py"))
             raise
         except requests.exceptions.ConnectionError as error:
-            log.error(f"REQUEST [CONNECTION] ERROR: {error}.")
+            log.error(error_message("Request [Connection]", "crawl", "derpi_get/abstract_class.py"))
             raise
         except requests.exceptions.Timeout as error:
-            log.error(f"REQUEST [TIMEOUT] ERROR: {error}.")
-            raise 
-        
+            log.error(error_message("Request [timeout]", "crawl", "derpi_get/abstract_class.py"))
+            raise
         print("---------------|Exiting Program|---------------")
 
     def retrieve_ids(self):
@@ -73,19 +66,13 @@ class derpibooru_search(img_metadata):
         ---
         :param <self>: <class> ; class object reference
         """
-        error_msg = "WRONG TYPE: An assertion error was raised while while using the retrieve_ids() " + \
-                    "within the class derpibooru_search() located in the derpi_get/abstract_class.py file."
-        io_windows_error = "IO or WINDOWS ERROR:  An error was raised while using the retrieve_ids() " + \
-                           "within the class derpibooru_search located in the derpi_get/abstract_class.py file."
-
-        if not isinstance(self.tags, list): raise AssertionError(error_msg + "\n<tags> variable not a 'list'")
-        if not isinstance(self.at_least_one, bool): raise AssertionError(error_msg + "\n<at_least_one> variable not a 'bool'")
-
         print("----|Retrieving IDs based on tag selection|----")
+        assert(isinstance(self.tags, list)), error_message("Erroneous Type", "retrieve_ids", "derpi_get/abstract_class.py")
+        assert(isinstance(self.at_least_one, bool)), error_message("Erroneous Type", "retrieve_ids", "derpi_get/abstract_class.py")
         try:
             id_list = self.id_filter(self.tags, self.at_least_one)
         except (IOError, WindowsError) as error:
-            log.error(io_windows_error)
+            log.error(error_message("IO or Windows", "retrieve_ids", "derpi_get/abstract_class.py"))
             raise
         print("----------------|IDs retrieved|----------------")
         return id_list
@@ -96,25 +83,23 @@ class derpibooru_search(img_metadata):
 		---
 		:param <self>: <class> ; class object reference
 		"""
-        io_windows_error = "IO or WINDOWS ERROR:  An error was raised while using the repair() " + \
-                           "within the class derpibooru_search located in the derpi_get/abstract_class.py file."
         print("----|Repairing missing tags in stored JSON|----")
         try:
             self.repair_tags()
         except (IOError, WindowsError) as error:
-            log.error(io_windows_error)
+            log.error(error_message("IO or Windows", "repair", "derpi_get/abstract_class.py"))
             raise
         except (requests.exceptions.TooManyRedirects, requests.exceptions.RequestException) as error:
-            log.error(f"REQUEST ERROR: {error}.")
+            log.error(error_message("Request [generic error]", "repair", "derpi_get/abstract_class.py"))
             raise
         except requests.exceptions.HTTPError as error:
-            log.error(f"REQUEST [HTTP] ERROR: {error}.")
+            log.error(error_message("Request [hhtp]", "repair", "derpi_get/abstract_class.py"))
             raise
         except requests.exceptions.ConnectionError as error:
-            log.error(f"REQUEST [CONNECTION] ERROR: {error}.")
+            log.error(error_message("Request [Connection]", "repair", "derpi_get/abstract_class.py"))
             raise
         except requests.exceptions.Timeout as error:
-            log.error(f"REQUEST [TIMEOUT] ERROR: {error}.")
+            log.error(error_message("Request [timeout]", "repair", "derpi_get/abstract_class.py"))
             raise
         print("----------------|Tags repaired|----------------")
 
@@ -126,22 +111,16 @@ class derpibooru_search(img_metadata):
 		:param <tags>: <list> ; list of strings (tags used to search ids)
 		:param <id_list>: <list> ; list of strings (i.e. picture id + url)
 		:param <nb_of_requests>: <integer> ; number of images to request
-		"""
-        error_msg = "WRONG TYPE: An assertion error was raised while while using the request_imgs() " + \
-                    "within the class derpibooru_search() located in the derpi_get/abstract_class.py file."
-        io_windows_error = "IO or WINDOWS ERROR:  An error was raised while using the request_imgs() " + \
-                           "within the class derpibooru_search located in the derpi_get/abstract_class.py file."
-                           
+		"""                
         print("------|Requesting images from derpibooru|-----")
-
-        if not isinstance(tags, list): raise AssertionError(error_msg + "\n<tags> variable not a 'list'")
-        if not isinstance(id_list, list): raise AssertionError(error_msg + "\n<id_list> variable not a 'list'")
+        assert(isinstance(tags, list)), error_message("Erroneous Type", "request_imgs", "derpi_get/abstract_class.py")
+        assert(isinstance(id_list, list)), error_message("Erroneous Type", "request_imgs", "derpi_get/abstract_class.py")
 
         try:
             img_path = os.getcwd() + "\\data\\" + "".join(sorted(tags))
             if not os.path.exists(img_path): os.makedirs(img_path)
         except (IOError, WindowsError) as error:
-            log.error(io_windows_error)
+            log.error(error_message("IO or Windows", "request_imgs", "derpi_get/abstract_class.py"))
             raise
             
         if (nb_of_requests == None) or (len(id_list) < nb_of_requests): nb_of_requests = len(id_list)
@@ -187,18 +166,17 @@ class derpibooru_search(img_metadata):
                         f.write(request.content)
                 time.sleep(.200)
                 print(f"The picture {image_id} was downloaded.")
-        
+
         except (requests.exceptions.TooManyRedirects, requests.exceptions.RequestException) as error:
-            log.error(f"REQUEST ERROR: {error}.")
+            log.error(error_message("Request [generic error]", "request_imgs", "derpi_get/abstract_class.py"))
             raise
         except requests.exceptions.HTTPError as error:
-            log.error(f"REQUEST [HTTP] ERROR: {error}.")
+            log.error(error_message("Request [hhtp]", "request_imgs", "derpi_get/abstract_class.py"))
             raise
         except requests.exceptions.ConnectionError as error:
-            log.error(f"REQUEST [CONNECTION] ERROR: {error}.")
+            log.error(error_message("Request [Connection]", "request_imgs", "derpi_get/abstract_class.py"))
             raise
         except requests.exceptions.Timeout as error:
-            log.error(f"REQUEST [TIMEOUT] ERROR: {error}.")
+            log.error(error_message("Request [timeout]", "request_imgs", "derpi_get/abstract_class.py"))
             raise
-		
         print("---------------|Images retrieved|--------------")

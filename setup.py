@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="derpi_get",
-    version="0.2 wip",
+    version="0.3",
     author="LMquentinLR",
     description="A simple implementation of a derpibooru metadata and image scraper.",
     long_description=long_description,
